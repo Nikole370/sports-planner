@@ -372,9 +372,6 @@ input, textarea, select { font-family: inherit; }
     flex-shrink: 0;
     scroll-snap-align: start;
   }
-  .day-col.today {
-    order: -1; /* hoy aparece primero */
-  }
 
   /* Routine card: full width, días en scroll */
   .routines-grid { grid-template-columns: 1fr; }
@@ -502,7 +499,7 @@ input, textarea, select { font-family: inherit; }
   flex-shrink: 0;
   transition: background .2s;
 }
-.block-dot.done { /* background set inline */ }
+
 
 /* Complete block: slightly different look */
 .block-complete .sport-block-header { opacity: .75; }
