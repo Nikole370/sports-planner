@@ -1,844 +1,220 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Marsi · Planner Deportivo</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#f7f5f0;--surface:#fff;--card:#fdfcf9;
-  --border:#e8e4dc;--border2:#d4cfc5;
-  --text:#1a1814;--muted:#8a8478;--muted2:#b8b3aa;
-  --accent:#2d5a27;--accent-light:#e8f5e5;
-  --accent2:#c4622d;
-  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
-  --shadow-lg:0 8px 32px rgba(0,0,0,.1);
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-.app{display:flex;min-height:100vh;}
-
-/* ── SIDEBAR ── */
-.sidebar{width:260px;min-width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;overflow-x:hidden;transition:width .25s cubic-bezier(.4,0,.2,1),min-width .25s cubic-bezier(.4,0,.2,1);}
-.sidebar.collapsed{width:48px;min-width:48px;}
-.sidebar.collapsed .sb-content{display:none;}
-.sidebar-toggle{position:fixed;top:16px;left:248px;z-index:300;width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);background:var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.12);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);transition:left .25s cubic-bezier(.4,0,.2,1),background .15s;}
-.sidebar-toggle:hover{background:var(--accent-light);color:var(--accent);border-color:var(--accent);}
-.sidebar-toggle.col{left:36px;}
-.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);}
-.brand{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;letter-spacing:-.02em;}
-.brand span{color:var(--accent);}
-.brand-sub{font-size:10px;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-top:2px;}
-.sb-section{padding:16px 20px;border-bottom:1px solid var(--border);}
-.sb-label{font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted2);margin-bottom:12px;font-weight:600;}
-.sport-list{display:flex;flex-direction:column;gap:6px;}
-.sport-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;border:1px solid var(--border);background:var(--card);transition:all .15s;}
-.sport-item:hover{border-color:var(--border2);background:#f0ede8;}
-.sport-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
-.sport-emoji{font-size:13px;outline:none;background:transparent;border:none;width:20px;text-align:center;font-family:'Outfit',sans-serif;}
-.sport-name{font-size:12px;font-weight:500;flex:1;outline:none;background:transparent;border:none;color:var(--text);font-family:'Outfit',sans-serif;}
-.sport-del{width:18px;height:18px;border-radius:4px;border:none;background:transparent;color:var(--muted2);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;flex-shrink:0;}
-.sport-item:hover .sport-del{opacity:1;}
-.sport-del:hover{background:#fee2e2;color:#dc2626;}
-.btn-sm{margin-top:8px;width:100%;padding:7px;border-radius:8px;border:1px dashed var(--border2);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px;}
-.btn-sm:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
-.edit-hint{font-size:11px;color:var(--muted2);padding:12px 20px;line-height:1.5;}
-
-/* ── MAIN ── */
-.main{flex:1;padding:32px 36px;overflow-x:hidden;min-width:0;}
-.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px;flex-wrap:wrap;}
-.page-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1;}
-.page-title span{display:block;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;font-family:'Outfit',sans-serif;}
-.export-bar{display:flex;gap:8px;}
-.btn-export{display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;border:1px solid var(--border);background:var(--surface);color:var(--muted);}
-.btn-export:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
-
-/* ── TABS ── */
-.tabs{display:flex;gap:3px;margin-bottom:24px;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:3px;width:fit-content;}
-.tab{padding:6px 16px;border-radius:8px;border:none;background:transparent;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap;}
-.tab.active{background:var(--accent);color:white;}
-.tab:not(.active):hover{background:var(--bg);color:var(--text);}
-.view-panel{display:none;}.view-panel.active{display:block;}
-.section-label{font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted2);margin-bottom:10px;font-weight:600;}
-
-/* ══════════════════════════════
-   TAB: RUTINAS (plantillas)
-══════════════════════════════ */
-.routines-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:20px;}
-.routine-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:box-shadow .15s;}
-.routine-card:hover{box-shadow:var(--shadow);}
-.routine-card-header{padding:14px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.routine-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;outline:none;background:transparent;border:none;color:var(--text);font-family:'Syne',sans-serif;flex:1;}
-.routine-dates{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-.routine-date-input{font-size:11px;color:var(--muted);background:transparent;border:1px solid var(--border);border-radius:6px;padding:2px 6px;outline:none;font-family:'Outfit',sans-serif;cursor:pointer;}
-.routine-date-input:focus{border-color:var(--accent);color:var(--text);}
-.routine-del{width:22px;height:22px;border-radius:6px;border:none;background:transparent;color:var(--muted2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;flex-shrink:0;}
-.routine-card:hover .routine-del{opacity:1;}
-.routine-del:hover{background:#fee2e2;color:#dc2626;}
-
-/* Days inside routine template */
-.routine-days{display:grid;grid-template-columns:repeat(7,1fr);}
-.routine-day{border-right:1px solid var(--border);min-height:120px;display:flex;flex-direction:column;}
-.routine-day:last-child{border-right:none;}
-.routine-day-name{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);padding:6px 6px 4px;font-weight:600;border-bottom:1px solid var(--border);}
-.routine-day-body{padding:4px;display:flex;flex-direction:column;gap:4px;flex:1;}
-.routine-sport-block{border-radius:6px;padding:4px 6px;}
-.routine-sport-label{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;}
-.routine-exercise-list{display:flex;flex-direction:column;gap:2px;}
-.routine-exercise{font-size:10px;color:inherit;opacity:.8;display:flex;align-items:center;gap:4px;}
-.routine-exercise input{font-size:10px;background:transparent;border:none;outline:none;color:inherit;width:100%;font-family:'Outfit',sans-serif;opacity:.9;}
-.routine-exercise input::placeholder{opacity:.5;}
-.ex-del{width:12px;height:12px;border:none;background:transparent;color:inherit;cursor:pointer;font-size:10px;opacity:0;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
-.routine-exercise:hover .ex-del{opacity:.6;}
-.btn-add-ex{font-size:9px;color:inherit;opacity:.5;background:transparent;border:none;cursor:pointer;padding:1px 0;font-family:'Outfit',sans-serif;text-align:left;}
-.btn-add-ex:hover{opacity:1;}
-.btn-add-sport-block{font-size:9px;color:var(--muted2);background:transparent;border:1px dashed var(--border2);border-radius:5px;cursor:pointer;padding:3px 6px;font-family:'Outfit',sans-serif;margin:4px;transition:all .15s;width:calc(100% - 8px);}
-.btn-add-sport-block:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
-
-.btn-add-routine{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px dashed var(--border2);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;}
-.btn-add-routine:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
-
-/* ══════════════════════════════
-   TAB: SEMANA (view + checklist)
-══════════════════════════════ */
-.week-nav{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
-.week-nav-label{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:-.01em;min-width:180px;}
-.nav-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--muted);transition:all .15s;}
-.nav-btn:hover{background:var(--bg);color:var(--text);}
-.routine-badge{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--accent-light);color:var(--accent);font-weight:600;border:1px solid rgba(45,90,39,.15);}
-
-.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;}
-.day-col{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:260px;transition:box-shadow .15s;}
-.day-col:hover{box-shadow:var(--shadow);}
-.day-col.today{border-color:var(--accent);box-shadow:0 0 0 2px rgba(45,90,39,.1);}
-.day-header{padding:10px 12px 8px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:1px;}
-.day-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}
-.day-date{font-size:10px;color:var(--muted2);letter-spacing:.04em;}
-.day-body{padding:8px 8px 0;display:flex;flex-direction:column;gap:6px;flex:1;}
-
-/* Sport checklist block */
-.sport-block{border-radius:9px;padding:8px 10px;border:1px solid transparent;}
-.sport-block-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
-.sport-block-title{font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px;letter-spacing:.03em;}
-.sport-block-time{font-size:10px;opacity:.7;display:flex;flex-direction:column;align-items:flex-end;gap:1px;}
-.sport-block-time input{font-size:10px;background:transparent;border:none;outline:none;color:inherit;text-align:right;width:44px;font-family:'Outfit',sans-serif;opacity:.85;}
-.sport-block-del{width:16px;height:16px;border-radius:4px;border:none;background:rgba(0,0,0,.08);color:inherit;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;}
-.sport-block:hover .sport-block-del{opacity:1;}
-
-/* checklist items */
-.check-list{display:flex;flex-direction:column;gap:4px;}
-.check-item{display:flex;align-items:flex-start;gap:6px;}
-.check-box{width:14px;height:14px;border-radius:3px;border:1.5px solid currentColor;cursor:pointer;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .15s;opacity:.6;}
-.check-box.done{opacity:1;background:currentColor;}
-.check-box.done::after{content:'✓';color:white;font-size:9px;}
-.check-label{font-size:11px;line-height:1.4;opacity:.85;outline:none;background:transparent;border:none;color:inherit;flex:1;font-family:'Outfit',sans-serif;}
-.check-label.done{text-decoration:line-through;opacity:.4;}
-.check-item-del{width:14px;height:14px;border:none;background:transparent;color:inherit;cursor:pointer;font-size:10px;opacity:0;transition:opacity .15s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.check-item:hover .check-item-del{opacity:.5;}
-.btn-add-check{font-size:10px;color:inherit;opacity:.4;background:transparent;border:none;cursor:pointer;padding:2px 0;font-family:'Outfit',sans-serif;transition:opacity .15s;}
-.btn-add-check:hover{opacity:.8;}
-
-.btn-add-block{margin:4px 8px 8px;padding:5px;border-radius:7px;border:1px dashed var(--border2);background:transparent;color:var(--muted2);font-size:10px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:3px;margin-top:auto;}
-.btn-add-block:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
-
-.day-note-wrap{padding:0 8px 8px;margin-top:4px;border-top:1px dashed var(--border);}
-.day-note{width:100%;font-size:10px;color:var(--muted);background:transparent;border:none;outline:none;font-family:'Outfit',sans-serif;resize:none;min-height:28px;line-height:1.5;padding-top:5px;}
-.day-note::placeholder{color:var(--muted2);font-style:italic;}
-
-/* Progress bar */
-.day-progress{height:3px;background:var(--border);margin:0 8px 6px;border-radius:2px;overflow:hidden;}
-.day-progress-fill{height:100%;border-radius:2px;transition:width .3s;}
-
-/* ══════════════════════════════
-   TAB: OBJETIVOS
-══════════════════════════════ */
-.macro-header{margin-bottom:28px;}
-.macro-title-edit{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.02em;outline:none;border:none;background:transparent;color:var(--text);width:100%;border-bottom:2px solid transparent;transition:border-color .15s;}
-.macro-title-edit:focus{border-bottom-color:var(--accent);}
-.macro-subtitle{font-size:13px;color:var(--muted);margin-top:5px;outline:none;border:none;background:transparent;width:100%;font-family:'Outfit',sans-serif;}
-.macro-goals-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
-.macro-goal-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;gap:14px;align-items:flex-start;transition:box-shadow .15s;position:relative;}
-.macro-goal-card:hover{box-shadow:var(--shadow);}
-.macro-goal-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;flex-shrink:0;margin-top:2px;}
-.macro-goal-body{flex:1;min-width:0;}
-.macro-sport-tag{font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:5px;}
-.macro-goal-text{font-size:14px;font-weight:600;color:var(--text);outline:none;background:transparent;border:none;width:100%;font-family:'Outfit',sans-serif;margin-bottom:3px;}
-.macro-goal-desc{font-size:12px;color:var(--muted);outline:none;background:transparent;border:none;width:100%;font-family:'Outfit',sans-serif;resize:none;line-height:1.5;}
-.macro-goal-deadline{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--bg);border:1px solid var(--border);color:var(--muted);outline:none;font-family:'Outfit',sans-serif;margin-top:6px;}
-.macro-goal-del{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:4px;border:none;background:transparent;color:var(--muted2);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;}
-.macro-goal-card:hover .macro-goal-del{opacity:1;}
-.macro-goal-del:hover{background:#fee2e2;color:#dc2626;}
-.btn-add-macro{display:flex;align-items:center;gap:7px;padding:10px 16px;border-radius:11px;border:1px dashed var(--border2);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;}
-.btn-add-macro:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
-
-/* month objectives */
-.month-obj-section{margin-top:32px;}
-.month-nav-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
-.month-nav-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;min-width:110px;}
-.month-goal-card{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:11px 14px;display:flex;align-items:flex-start;gap:8px;margin-bottom:7px;}
-.month-goal-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px;}
-.month-goal-text{font-size:12px;color:var(--text);outline:none;background:transparent;border:none;width:100%;font-family:'Outfit',sans-serif;resize:none;line-height:1.4;}
-.month-goal-del{width:16px;height:16px;border-radius:4px;border:none;background:transparent;color:var(--muted2);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;flex-shrink:0;}
-.month-goal-card:hover .month-goal-del{opacity:1;}
-.month-goal-del:hover{background:#fee2e2;color:#dc2626;}
-
-/* week micro */
-.week-micro-section{margin-top:24px;}
-.week-row{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px;}
-.week-row-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none;}
-.week-row-hdr:hover{background:var(--bg);}
-.week-num{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--muted2);min-width:65px;}
-.week-dates-label{font-size:11px;color:var(--muted);flex:1;}
-.week-chevron{font-size:9px;color:var(--muted2);transition:transform .2s;margin-left:auto;}
-.week-row.open .week-chevron{transform:rotate(180deg);}
-.week-body{display:none;padding:12px 14px;border-top:1px solid var(--border);}
-.week-row.open .week-body{display:block;}
-.micro-item{display:flex;align-items:flex-start;gap:7px;margin-bottom:7px;}
-.micro-check{width:14px;height:14px;border-radius:3px;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .15s;}
-.micro-check.done{background:var(--accent);border-color:var(--accent);color:white;}
-.micro-text{font-size:12px;color:var(--text);outline:none;background:transparent;border:none;flex:1;font-family:'Outfit',sans-serif;resize:none;line-height:1.4;}
-.micro-text.done{text-decoration:line-through;color:var(--muted2);}
-.micro-del{width:14px;height:14px;border:none;background:transparent;color:var(--muted2);cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;opacity:0;flex-shrink:0;}
-.micro-item:hover .micro-del{opacity:.6;}
-.week-go-btn{font-size:11px;color:var(--accent);background:transparent;border:none;cursor:pointer;font-family:'Outfit',sans-serif;text-decoration:underline;margin-top:6px;padding:0;}
-
-/* ── MODALS ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(26,24,20,.4);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
-.modal-overlay.open{opacity:1;pointer-events:all;}
-.modal{background:var(--surface);border-radius:18px;padding:24px;width:100%;max-width:420px;box-shadow:var(--shadow-lg);transform:scale(.96) translateY(8px);transition:transform .2s;}
-.modal-overlay.open .modal{transform:scale(1) translateY(0);}
-.modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:18px;letter-spacing:-.02em;}
-.form-group{margin-bottom:14px;}
-.form-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px;display:block;font-weight:600;}
-.form-input,.form-select,.form-textarea{width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .15s;}
-.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
-.form-textarea{resize:vertical;min-height:60px;}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.modal-actions{display:flex;gap:8px;margin-top:20px;justify-content:flex-end;}
-.btn{padding:8px 18px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;border:none;}
-.btn-primary{background:var(--accent);color:white;}
-.btn-primary:hover{background:#234820;}
-.btn-secondary{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
-.btn-secondary:hover{background:var(--border);}
-.color-grid{display:flex;gap:7px;flex-wrap:wrap;}
-.color-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .1s,border-color .1s;}
-.color-swatch:hover{transform:scale(1.1);}
-.color-swatch.selected{border-color:var(--text);}
-
-/* PRINT */
-@media print{
-  .sidebar,.sidebar-toggle,.export-bar,.tabs,.btn-add-block,.btn-add-check,
-  .sport-block-del,.check-item-del,.btn-sm,.week-go-btn,.modal-overlay,
-  .btn-add-macro,.btn-add-routine{display:none!important;}
-  body{background:white;}
-  .main{padding:12px;}
-  .app{display:block;}
-  .week-grid{grid-template-columns:repeat(7,1fr)!important;}
-  .day-col{break-inside:avoid;min-height:auto;}
-  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-}
-[contenteditable]:focus{outline:none;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marsi · Planner Deportivo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="app">
-  <button class="sidebar-toggle" id="stoggle" onclick="toggleSB()" title="Colapsar">◀</button>
 
+  <!-- ══ SIDEBAR TOGGLE ══ -->
+  <button class="sidebar-toggle" id="stoggle" onclick="toggleSB()" title="Menú">◀</button>
+  <!-- Backdrop for mobile sidebar -->
+  <div class="sidebar-backdrop" id="sb-backdrop" onclick="closeSBMobile()"></div>
+
+  <!-- ══ SIDEBAR ══ -->
   <aside class="sidebar" id="sidebar">
     <div class="sb-content">
       <div class="sidebar-header">
         <div class="brand">Marsi<span>.</span></div>
         <div class="brand-sub">Planner deportivo</div>
       </div>
+
       <div class="sb-section">
-        <div class="sb-label">Mis deportes</div>
+        <div class="sb-label">Mis deportes / categorías</div>
         <div class="sport-list" id="sport-list"></div>
-        <button class="btn-sm" onclick="openAddSport()">+ Agregar deporte</button>
+        <button class="btn-sm" style="margin-top:10px;width:100%" onclick="openAddSport()">+ Agregar categoría</button>
       </div>
-      <div class="edit-hint">💡 Haz clic en cualquier texto para editarlo.</div>
+
+      <p class="edit-hint">💡 Haz clic en cualquier texto para editarlo directamente.</p>
     </div>
   </aside>
 
-  <main class="main">
+  <!-- ══ MAIN ══ -->
+  <main class="main" id="main-content">
+
+    <!-- Page header -->
     <div class="page-header">
-      <div class="page-title"><span>Mi planificación</span>Deportiva</div>
+      <div class="page-title">
+        <span>Mi planificación</span>Deportiva
+      </div>
       <div class="export-bar">
-        <button class="btn-export" onclick="exportPNG()">🖼️ PNG</button>
+        <button class="btn-export" id="btn-export-png" onclick="exportPNG()">🖼️ PNG</button>
         <button class="btn-export" onclick="window.print()">📄 PDF</button>
       </div>
     </div>
 
+    <!-- Tabs -->
     <div class="tabs">
       <button class="tab active" onclick="switchTab('semana')">📋 Semana</button>
-      <button class="tab" onclick="switchTab('rutinas')">🔁 Rutinas</button>
-      <button class="tab" onclick="switchTab('objetivos')">🎯 Objetivos</button>
+      <button class="tab"        onclick="switchTab('rutinas')">🔁 Rutinas</button>
+      <button class="tab"        onclick="switchTab('objetivos')">🎯 Objetivos</button>
     </div>
 
-    <!-- ═══ SEMANA ═══ -->
+    <!-- ════════════════════════════════════════
+         PANEL: SEMANA
+    ════════════════════════════════════════ -->
     <div class="view-panel active" id="panel-semana">
       <div class="week-nav">
         <button class="nav-btn" onclick="prevWeek()">‹</button>
         <div class="week-nav-label" id="week-nav-label"></div>
         <button class="nav-btn" onclick="nextWeek()">›</button>
         <div id="active-routine-badge"></div>
+        <button class="btn-collapse-all" id="btn-collapse-all" onclick="toggleAllBlocks()">⊟ Contraer todo</button>
       </div>
       <div class="week-grid" id="week-grid"></div>
     </div>
 
-    <!-- ═══ RUTINAS ═══ -->
+    <!-- ════════════════════════════════════════
+         PANEL: RUTINAS
+    ════════════════════════════════════════ -->
     <div class="view-panel" id="panel-rutinas">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Define plantillas de rutina semanales y asígnales un rango de fechas. El planner usará automáticamente la rutina que corresponda a cada semana.</p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.7;max-width:640px">
+        Define plantillas de rutina semanales y asígnales un rango de fechas.
+        El planner cargará automáticamente los ejercicios de la rutina activa cada semana.
+        Al vencer el rango, crea una nueva rutina con los cambios que quieras.
+      </p>
       <div class="routines-grid" id="routines-grid"></div>
       <button class="btn-add-routine" onclick="addRoutine()">+ Nueva rutina</button>
     </div>
 
-    <!-- ═══ OBJETIVOS ═══ -->
+    <!-- ════════════════════════════════════════
+         PANEL: OBJETIVOS
+    ════════════════════════════════════════ -->
     <div class="view-panel" id="panel-objetivos">
+
+      <!-- Título editable -->
       <div class="macro-header">
-        <input class="macro-title-edit" id="macro-title" value="Mi objetivo: estar lista para mayo">
-        <input class="macro-subtitle" id="macro-subtitle" value="Mejorar nivel competitivo en tenis y fuerza base para jugar partidos con desconocidos">
+        <input class="macro-title-edit" id="macro-title"
+               value="Mi objetivo: estar lista para mayo">
+        <input class="macro-subtitle" id="macro-subtitle"
+               value="Mejorar nivel competitivo en tenis y fuerza base para jugar partidos con desconocidos">
       </div>
+
+      <!-- Objetivos macro -->
       <div class="section-label">Objetivos macro</div>
       <div class="macro-goals-list" id="macro-goals-list"></div>
       <button class="btn-add-macro" onclick="addMacroGoal()">+ Agregar objetivo macro</button>
 
+      <!-- Objetivos por mes -->
       <div class="month-obj-section">
         <div class="month-nav-row">
           <button class="nav-btn" onclick="prevMO()">‹</button>
           <div class="month-nav-name" id="mo-month-name"></div>
           <button class="nav-btn" onclick="nextMO()">›</button>
         </div>
+
         <div class="section-label">Objetivos del mes</div>
         <div id="month-goals-list"></div>
-        <button class="btn-sm" style="width:auto;padding:6px 12px;margin-top:4px" onclick="addMonthGoal()">+ Agregar objetivo del mes</button>
+        <button class="btn-sm" style="width:auto;padding:6px 14px;margin-top:6px"
+                onclick="addMonthGoal()">+ Agregar objetivo del mes</button>
 
+        <!-- Microobjetivos por semana -->
         <div class="week-micro-section">
-          <div class="section-label" style="margin-top:20px">Microobjetivos por semana</div>
+          <div class="section-label" style="margin-top:22px">Microobjetivos por semana</div>
           <div id="week-micro-list"></div>
         </div>
       </div>
+
     </div>
   </main>
 </div>
 
-<!-- MODALS -->
+<!-- ════════════════════════════════════════
+     MODALS
+════════════════════════════════════════ -->
+
+<!-- Modal: Agregar deporte -->
 <div class="modal-overlay" id="modal-sport">
   <div class="modal">
-    <div class="modal-title">Nuevo deporte</div>
+    <div class="modal-title">Nueva categoría</div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Emoji</label><input class="form-input" id="sp-emoji" value="🏋️" maxlength="2" style="font-size:18px;text-align:center"></div>
-      <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="sp-name" placeholder="Ej: Natación"></div>
+      <div class="form-group">
+        <label class="form-label">Emoji</label>
+        <input class="form-input" id="sp-emoji" value="🏋️" maxlength="2"
+               style="font-size:18px;text-align:center">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nombre</label>
+        <input class="form-input" id="sp-name" placeholder="Ej: Natación">
+      </div>
     </div>
-    <div class="form-group"><label class="form-label">Color</label><div class="color-grid" id="color-grid"></div></div>
+    <div class="form-group">
+      <label class="form-label">Color</label>
+      <div class="color-grid" id="color-grid"></div>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('modal-sport')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveSport()">Agregar</button>
+      <button class="btn btn-primary"   onclick="saveSport()">Agregar</button>
     </div>
   </div>
 </div>
 
+<!-- Modal: Agregar bloque a semana o plantilla -->
 <div class="modal-overlay" id="modal-add-block">
   <div class="modal">
     <div class="modal-title" id="modal-add-block-title">Agregar bloque</div>
-    <div class="form-group"><label class="form-label">Deporte</label><select class="form-select" id="block-sport-sel"></select></div>
+    <div class="form-group">
+      <label class="form-label">Categoría</label>
+      <select class="form-select" id="block-sport-sel"></select>
+    </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Hora inicio</label><input type="time" class="form-input" id="block-time-start" value="08:00"></div>
-      <div class="form-group"><label class="form-label">Hora fin</label><input type="time" class="form-input" id="block-time-end" value="09:30"></div>
+      <div class="form-group">
+        <label class="form-label">Hora inicio (opcional)</label>
+        <input type="time" class="form-input" id="block-time-start">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hora fin (opcional)</label>
+        <input type="time" class="form-input" id="block-time-end">
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('modal-add-block')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveBlock()">Agregar</button>
+      <button class="btn btn-primary"   onclick="saveBlock()">Agregar</button>
     </div>
   </div>
 </div>
 
+<!-- Modal: Objetivo macro -->
 <div class="modal-overlay" id="modal-macro">
   <div class="modal">
-    <div class="modal-title">Objetivo macro</div>
-    <div class="form-group"><label class="form-label">Deporte</label><select class="form-select" id="macro-sp-sel"></select></div>
-    <div class="form-group"><label class="form-label">Objetivo</label><input class="form-input" id="macro-text" placeholder="Ej: Mejorar potencia explosiva"></div>
-    <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-textarea" id="macro-desc" placeholder="Cómo, por qué..."></textarea></div>
-    <div class="form-group"><label class="form-label">Fecha límite</label><input class="form-input" id="macro-deadline" placeholder="Ej: Mayo 2025"></div>
+    <div class="modal-title">Nuevo objetivo macro</div>
+    <div class="form-group">
+      <label class="form-label">Categoría</label>
+      <select class="form-select" id="macro-sp-sel"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Objetivo</label>
+      <input class="form-input" id="macro-text" placeholder="Ej: Mejorar potencia explosiva">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descripción</label>
+      <textarea class="form-textarea" id="macro-desc" placeholder="Cómo, por qué, métricas..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fecha límite</label>
+      <input class="form-input" id="macro-deadline" placeholder="Ej: Mayo 2025">
+    </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('modal-macro')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveMacroGoal()">Guardar</button>
+      <button class="btn btn-primary"   onclick="saveMacroGoal()">Guardar</button>
     </div>
   </div>
 </div>
 
+<!-- ════════════════════════════════════════
+     SCRIPTS (orden importante)
+════════════════════════════════════════ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script>
-// ═══════════════════════════════════════
-// CONSTANTS & HELPERS
-// ═══════════════════════════════════════
-const COLORS=['#2d5a27','#c4622d','#1e6b8c','#7c3d8a','#b5860d','#1a5e5e','#c4365a','#4a6741','#3b4da8','#7d5c1e','#555555','#1a7a4a'];
-const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const DAY_KEYS=['lun','mar','mie','jue','vie','sab','dom'];
-const DAY_NAMES={lun:'Lun',mar:'Mar',mie:'Mié',jue:'Jue',vie:'Vie',sab:'Sáb',dom:'Dom'};
-const DAY_FULL={lun:'Lunes',mar:'Martes',mie:'Miércoles',jue:'Jueves',vie:'Viernes',sab:'Sábado',dom:'Domingo'};
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/week.js"></script>
+<script src="js/routines.js"></script>
+<script src="js/objectives.js"></script>
+<script src="js/app.js"></script>
 
-const uid=()=>'x'+Math.random().toString(36).substr(2,8);
-const gs=id=>S.sports.find(s=>s.id===id);
-function rgba(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
-
-// Monday of ISO week containing date
-function weekStart(date){const d=new Date(date);const day=d.getDay()||7;d.setDate(d.getDate()-day+1);d.setHours(0,0,0,0);return d;}
-function weekKey(date){const d=weekStart(date);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-function addDays(date,n){const d=new Date(date);d.setDate(d.getDate()+n);return d;}
-function fmtDate(d){return `${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)}`;}
-function fmtDateInput(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-function parseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
-
-// ═══════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════
-let S={
-  sports:[
-    {id:'s1',name:'Tenis',emoji:'🎾',color:'#2d5a27'},
-    {id:'s2',name:'Gimnasio',emoji:'💪',color:'#c4622d'},
-    {id:'s3',name:'Cardio',emoji:'🏃',color:'#1e6b8c'},
-  ],
-  // Routine templates
-  routines:[
-    {
-      id:'r1',name:'Rutina base',dateStart:'2025-03-03',dateEnd:'2025-04-27',
-      days:{
-        lun:[{id:'b1',sportId:'s2',timeStart:'07:00',timeEnd:'08:30',exercises:[{id:'e1',text:'Sentadilla 4×5',done:false},{id:'e2',text:'Peso muerto 4×4',done:false},{id:'e3',text:'Hip thrust 3×8',done:false}]},{id:'b2',sportId:'s1',timeStart:'18:00',timeEnd:'20:00',exercises:[{id:'e4',text:'Calentamiento 15 min',done:false},{id:'e5',text:'Peloteo de fondo',done:false},{id:'e6',text:'Trabajo de servicio',done:false}]}],
-        mar:[{id:'b3',sportId:'s1',timeStart:'07:30',timeEnd:'10:00',exercises:[{id:'e7',text:'Sets completos x3',done:false},{id:'e8',text:'Puntos cruzados',done:false}]},{id:'b4',sportId:'s3',timeStart:'10:15',timeEnd:'10:45',exercises:[{id:'e9',text:'6×200m sprint',done:false},{id:'e10',text:'Vuelta a la calma',done:false}]}],
-        mie:[{id:'b5',sportId:'s2',timeStart:'07:00',timeEnd:'08:30',exercises:[{id:'e11',text:'Press banca 4×5',done:false},{id:'e12',text:'Remo con barra 4×6',done:false},{id:'e13',text:'Jalones 3×8',done:false}]}],
-        jue:[{id:'b6',sportId:'s1',timeStart:'18:00',timeEnd:'20:00',exercises:[{id:'e14',text:'Match play completo',done:false},{id:'e15',text:'Trabajo de volea',done:false}]},{id:'b7',sportId:'s2',timeStart:'20:15',timeEnd:'21:00',exercises:[{id:'e16',text:'Sentadilla búlgara 3×8',done:false},{id:'e17',text:'Core antirotación',done:false}]}],
-        vie:[{id:'b8',sportId:'s2',timeStart:'07:00',timeEnd:'08:30',exercises:[{id:'e18',text:'Cargadas 4×3',done:false},{id:'e19',text:'Saltos cajón 3×5',done:false},{id:'e20',text:'Med ball slam 3×8',done:false}]},{id:'b9',sportId:'s1',timeStart:'18:00',timeEnd:'19:00',exercises:[{id:'e21',text:'Pared 30 min',done:false},{id:'e22',text:'Técnica de revés',done:false}]}],
-        sab:[{id:'b10',sportId:'s1',timeStart:'08:00',timeEnd:'11:00',exercises:[{id:'e23',text:'Partido de práctica',done:false},{id:'e24',text:'Clínica o sparring',done:false}]}],
-        dom:[],
-      }
-    }
-  ],
-  // Per-week check state: weekKey -> dayKey -> blockId -> exerciseId -> done
-  weekChecks:{},
-  // Per-week notes
-  weekNotes:{},
-  // Per-week extra blocks (added only for that week)
-  weekExtra:{},
-  // Macro goals
-  macroGoals:[
-    {id:'m1',sportId:'s1',text:'Mejorar nivel competitivo en tenis',desc:'Jugar partidos con desconocidos sintiéndome segura',deadline:'Mayo 2025'},
-    {id:'m2',sportId:'s2',text:'Desarrollar potencia y fuerza base',desc:'4 días/semana de gym sostenidos',deadline:'Abril 2025'},
-    {id:'m3',sportId:'s3',text:'Mejorar resistencia aeróbica',desc:'Series cortas 2×/semana para aguantar sets largos',deadline:'Mayo 2025'},
-  ],
-  monthObjectives:{
-    '2025-03':[
-      {id:'mo1',sportId:'s1',text:'Consistencia en rally: 10+ golpes seguidos'},
-      {id:'mo2',sportId:'s2',text:'Completar los 4 días de gym cada semana'},
-    ],
-    '2025-04':[{id:'mo3',sportId:'s2',text:'Aumentar peso en press banca'}],
-    '2025-05':[{id:'mo4',sportId:'s1',text:'Jugar partido con desconocidos ✨'},{id:'mo5',sportId:'s1',text:'Aguantar 3 sets completos'}],
-  },
-  weekMicros:{
-    '2025-03-03':[{id:'wm1',text:'Mejorar primer servicio',done:false,sportId:'s1'},{id:'wm2',text:'Sentadilla 4×5 con buena técnica',done:false,sportId:'s2'}],
-    '2025-03-10':[{id:'wm3',text:'Rally 10 golpes 3 veces por sesión',done:false,sportId:'s1'}],
-  }
-};
-
-// UI STATE
-let currentTab='semana';
-let currentWeekDate=weekStart(new Date());
-let moMonth='2025-03';
-let _modalCtx={};
-let _selColor=COLORS[0];
-
-// ═══════════════════════════════════════
-// SIDEBAR
-// ═══════════════════════════════════════
-function toggleSB(){
-  const sb=document.getElementById('sidebar'),btn=document.getElementById('stoggle');
-  sb.classList.toggle('collapsed');
-  const c=sb.classList.contains('collapsed');
-  btn.textContent=c?'▶':'◀';btn.classList.toggle('col',c);
-}
-
-// ═══════════════════════════════════════
-// TABS
-// ═══════════════════════════════════════
-function switchTab(tab){
-  currentTab=tab;
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['semana','rutinas','objetivos'][i]===tab));
-  document.querySelectorAll('.view-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('panel-'+tab).classList.add('active');
-  if(tab==='semana')renderWeekView();
-  if(tab==='rutinas')renderRoutines();
-  if(tab==='objetivos'){renderMacroGoals();renderMonthObjectives();}
-}
-
-// ═══════════════════════════════════════
-// SPORTS
-// ═══════════════════════════════════════
-function renderSports(){
-  const list=document.getElementById('sport-list');list.innerHTML='';
-  S.sports.forEach(sp=>{
-    const d=document.createElement('div');d.className='sport-item';
-    d.innerHTML=`<div class="sport-dot" style="background:${sp.color}"></div><span class="sport-emoji" contenteditable="true" spellcheck="false">${sp.emoji}</span><span class="sport-name" contenteditable="true" spellcheck="false">${sp.name}</span><button class="sport-del" onclick="delSport('${sp.id}')">×</button>`;
-    d.querySelector('.sport-emoji').addEventListener('input',e=>{sp.emoji=e.target.textContent.trim()||sp.emoji;});
-    d.querySelector('.sport-name').addEventListener('input',e=>{sp.name=e.target.textContent.trim()||sp.name;});
-    list.appendChild(d);
-  });
-}
-function delSport(id){if(S.sports.length<=1)return;S.sports=S.sports.filter(s=>s.id!==id);renderSports();}
-function openAddSport(){_selColor=COLORS[0];document.getElementById('sp-name').value='';document.getElementById('sp-emoji').value='🏋️';renderColorGrid();openModal('modal-sport');}
-function saveSport(){const n=document.getElementById('sp-name').value.trim(),e=document.getElementById('sp-emoji').value.trim();if(!n)return;S.sports.push({id:uid(),name:n,emoji:e||'🏅',color:_selColor});closeModal('modal-sport');renderSports();}
-function renderColorGrid(){const g=document.getElementById('color-grid');g.innerHTML='';COLORS.forEach(c=>{const sw=document.createElement('div');sw.className='color-swatch'+(c===_selColor?' selected':'');sw.style.background=c;sw.onclick=()=>{_selColor=c;document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('selected'));sw.classList.add('selected');};g.appendChild(sw);});}
-function populateSportSel(id){const sel=document.getElementById(id);sel.innerHTML=S.sports.map(s=>`<option value="${s.id}">${s.emoji} ${s.name}</option>`).join('');}
-
-// ═══════════════════════════════════════
-// ROUTINES TAB
-// ═══════════════════════════════════════
-function renderRoutines(){
-  const grid=document.getElementById('routines-grid');grid.innerHTML='';
-  S.routines.forEach(r=>grid.appendChild(buildRoutineCard(r)));
-}
-
-function buildRoutineCard(r){
-  const card=document.createElement('div');card.className='routine-card';
-  card.innerHTML=`
-    <div class="routine-card-header">
-      <input class="routine-name" value="${r.name}" placeholder="Nombre de rutina">
-      <div class="routine-dates">
-        <span>Del</span>
-        <input type="date" class="routine-date-input" value="${r.dateStart}" onchange="updateRoutineDate('${r.id}','start',this.value)">
-        <span>al</span>
-        <input type="date" class="routine-date-input" value="${r.dateEnd}" onchange="updateRoutineDate('${r.id}','end',this.value)">
-      </div>
-      <button class="routine-del" onclick="delRoutine('${r.id}')">×</button>
-    </div>
-    <div class="routine-days" id="rdays-${r.id}"></div>
-  `;
-  card.querySelector('.routine-name').addEventListener('input',e=>r.name=e.target.value);
-  const daysEl=card.querySelector(`#rdays-${r.id}`);
-  DAY_KEYS.forEach(dk=>{
-    const dc=document.createElement('div');dc.className='routine-day';
-    dc.innerHTML=`<div class="routine-day-name">${DAY_NAMES[dk]}</div><div class="routine-day-body" id="rdb-${r.id}-${dk}"></div><button class="btn-add-sport-block" onclick="openAddTemplateBlock('${r.id}','${dk}')">+ bloque</button>`;
-    daysEl.appendChild(dc);
-    renderTemplateBlocks(r,dk);
-  });
-  return card;
-}
-
-function renderTemplateBlocks(r,dk){
-  const body=document.getElementById(`rdb-${r.id}-${dk}`);if(!body)return;
-  body.innerHTML='';
-  (r.days[dk]||[]).forEach(block=>{
-    const sp=gs(block.sportId);if(!sp)return;
-    const div=document.createElement('div');div.className='routine-sport-block';
-    div.style.background=rgba(sp.color,.1);div.style.color=sp.color;
-    div.innerHTML=`<div class="routine-sport-label">${sp.emoji} ${sp.name}<button class="sport-block-del" style="opacity:.4;font-size:10px;border:none;background:transparent;cursor:pointer;color:inherit" onclick="delTemplateBlock('${r.id}','${dk}','${block.id}')">×</button></div><div class="routine-exercise-list" id="rex-${block.id}"></div><button class="btn-add-ex" onclick="addTemplateEx('${r.id}','${dk}','${block.id}')">+ ejercicio</button>`;
-    body.appendChild(div);
-    renderTemplateExercises(block);
-  });
-}
-
-function renderTemplateExercises(block){
-  const list=document.getElementById(`rex-${block.id}`);if(!list)return;list.innerHTML='';
-  block.exercises.forEach(ex=>{
-    const item=document.createElement('div');item.className='routine-exercise';
-    item.innerHTML=`<span style="opacity:.4;font-size:9px">—</span><input value="${ex.text}" placeholder="Ejercicio..."><button class="ex-del" onclick="delTemplateEx('${block.id}','${ex.id}')">×</button>`;
-    item.querySelector('input').addEventListener('input',e=>ex.text=e.target.value);
-    list.appendChild(item);
-  });
-}
-
-function openAddTemplateBlock(rid,dk){_modalCtx={rid,dk,mode:'template'};populateSportSel('block-sport-sel');document.getElementById('block-time-start').value='08:00';document.getElementById('block-time-end').value='09:30';document.getElementById('modal-add-block-title').textContent='Agregar bloque a plantilla';openModal('modal-add-block');}
-
-function saveBlock(){
-  const sp=document.getElementById('block-sport-sel').value;
-  const ts=document.getElementById('block-time-start').value;
-  const te=document.getElementById('block-time-end').value;
-  const{rid,dk,mode,wk,wdk}=_modalCtx;
-  if(mode==='template'){
-    const r=S.routines.find(r=>r.id===rid);if(!r)return;
-    if(!r.days[dk])r.days[dk]=[];
-    r.days[dk].push({id:uid(),sportId:sp,timeStart:ts,timeEnd:te,exercises:[]});
-    closeModal('modal-add-block');renderRoutines();
-  } else {
-    // week-specific extra block
-    if(!S.weekExtra[wk])S.weekExtra[wk]={};
-    if(!S.weekExtra[wk][wdk])S.weekExtra[wk][wdk]=[];
-    S.weekExtra[wk][wdk].push({id:uid(),sportId:sp,timeStart:ts,timeEnd:te,exercises:[{id:uid(),text:'',done:false}]});
-    closeModal('modal-add-block');renderWeekView();
-  }
-}
-
-function delRoutine(id){if(!confirm('¿Eliminar esta rutina?'))return;S.routines=S.routines.filter(r=>r.id!==id);renderRoutines();}
-function updateRoutineDate(id,field,val){const r=S.routines.find(r=>r.id===id);if(!r)return;if(field==='start')r.dateStart=val;else r.dateEnd=val;}
-function addTemplateEx(rid,dk,bid){const r=S.routines.find(r=>r.id===rid);if(!r)return;const b=(r.days[dk]||[]).find(b=>b.id===bid);if(!b)return;b.exercises.push({id:uid(),text:'',done:false});renderTemplateBlocks(r,dk);}
-function delTemplateEx(bid,eid){S.routines.forEach(r=>{DAY_KEYS.forEach(dk=>{const b=(r.days[dk]||[]).find(b=>b.id===bid);if(b)b.exercises=b.exercises.filter(e=>e.id!==eid);});});renderRoutines();}
-function delTemplateBlock(rid,dk,bid){const r=S.routines.find(r=>r.id===rid);if(!r)return;r.days[dk]=(r.days[dk]||[]).filter(b=>b.id!==bid);renderTemplateBlocks(r,dk);}
-function addRoutine(){
-  const today=new Date();const end=new Date(today);end.setMonth(end.getMonth()+2);
-  S.routines.push({id:uid(),name:'Nueva rutina',dateStart:fmtDateInput(today),dateEnd:fmtDateInput(end),days:{lun:[],mar:[],mie:[],jue:[],vie:[],sab:[],dom:[]}});
-  renderRoutines();
-}
-
-// ═══════════════════════════════════════
-// FIND ACTIVE ROUTINE FOR A WEEK
-// ═══════════════════════════════════════
-function getActiveRoutine(weekDateStr){
-  const wDate=parseDate(weekDateStr);
-  return S.routines.find(r=>{
-    const ds=parseDate(r.dateStart),de=parseDate(r.dateEnd);
-    return wDate>=ds && wDate<=de;
-  })||null;
-}
-
-// ═══════════════════════════════════════
-// WEEK VIEW
-// ═══════════════════════════════════════
-function prevWeek(){currentWeekDate=addDays(currentWeekDate,-7);renderWeekView();}
-function nextWeek(){currentWeekDate=addDays(currentWeekDate,7);renderWeekView();}
-
-function renderWeekView(){
-  const wk=weekKey(currentWeekDate);
-  const wStart=weekStart(currentWeekDate);
-  const routine=getActiveRoutine(wk);
-
-  // nav label
-  const wEnd=addDays(wStart,6);
-  document.getElementById('week-nav-label').textContent=`${fmtDate(wStart)} – ${fmtDate(wEnd)} ${wStart.getFullYear()}`;
-
-  // badge
-  const badge=document.getElementById('active-routine-badge');
-  badge.innerHTML=routine?`<span class="routine-badge">🔁 ${routine.name}</span>`:`<span style="font-size:11px;color:var(--muted2)">Sin rutina asignada</span>`;
-
-  if(!S.weekChecks[wk])S.weekChecks[wk]={};
-  if(!S.weekNotes[wk])S.weekNotes[wk]={};
-
-  const grid=document.getElementById('week-grid');grid.innerHTML='';
-  const todayKey=weekKey(new Date());
-  const todayIdx=(new Date().getDay()||7)-1;
-
-  DAY_KEYS.forEach((dk,i)=>{
-    const dayDate=addDays(wStart,i);
-    const isToday=wk===todayKey && i===todayIdx;
-
-    // Get blocks: from routine template + week-specific extras
-    const templateBlocks=(routine?.days[dk]||[]);
-    const extraBlocks=(S.weekExtra[wk]?.[dk]||[]);
-    const allBlocks=[...templateBlocks,...extraBlocks];
-
-    // compute progress for this day
-    let totalEx=0,doneEx=0;
-    allBlocks.forEach(block=>{
-      block.exercises.forEach(ex=>{
-        totalEx++;
-        const checked=S.weekChecks[wk]?.[dk]?.[block.id]?.[ex.id];
-        if(checked)doneEx++;
-      });
-    });
-    const pct=totalEx>0?Math.round(doneEx/totalEx*100):0;
-
-    const col=document.createElement('div');
-    col.className='day-col'+(isToday?' today':'');
-    col.innerHTML=`
-      <div class="day-header">
-        <div class="day-name">${DAY_NAMES[dk]}</div>
-        <div class="day-date">${fmtDate(dayDate)}</div>
-      </div>
-      ${totalEx>0?`<div class="day-progress"><div class="day-progress-fill" style="width:${pct}%;background:${pct===100?'var(--accent)':'var(--accent2)'}"></div></div>`:''}
-      <div class="day-body" id="dbody-${dk}"></div>
-      <button class="btn-add-block" onclick="openAddWeekBlock('${wk}','${dk}')">+ bloque</button>
-      <div class="day-note-wrap"><textarea class="day-note" placeholder="📝 Nota del día...">${S.weekNotes[wk][dk]||''}</textarea></div>
-    `;
-    grid.appendChild(col);
-    col.querySelector('.day-note').addEventListener('input',e=>{S.weekNotes[wk][dk]=e.target.value;});
-
-    const body=col.querySelector(`#dbody-${dk}`);
-    allBlocks.forEach(block=>renderWeekBlock(body,block,wk,dk,block.id in (routine?.days[dk]?.reduce((a,b)=>({...a,[b.id]:1}),{})||{})));
-  });
-}
-
-function renderWeekBlock(container,block,wk,dk,isTemplate){
-  const sp=gs(block.sportId);if(!sp)return;
-  if(!S.weekChecks[wk][dk])S.weekChecks[wk][dk]={};
-  if(!S.weekChecks[wk][dk][block.id])S.weekChecks[wk][dk][block.id]={};
-
-  const div=document.createElement('div');div.className='sport-block';
-  div.style.background=rgba(sp.color,.1);div.style.borderColor=rgba(sp.color,.2);div.style.color=sp.color;
-
-  div.innerHTML=`
-    <div class="sport-block-header">
-      <div class="sport-block-title">${sp.emoji} ${sp.name}</div>
-      <div style="display:flex;align-items:flex-start;gap:4px">
-        <div class="sport-block-time">
-          <input data-f="start" value="${block.timeStart}" style="color:${sp.color}">
-          <input data-f="end" value="${block.timeEnd}" style="color:${sp.color}">
-        </div>
-        <button class="sport-block-del" onclick="delWeekBlock('${wk}','${dk}','${block.id}','${isTemplate}')">×</button>
-      </div>
-    </div>
-    <div class="check-list" id="cl-${wk}-${dk}-${block.id}"></div>
-    <button class="btn-add-check" onclick="addCheckItem('${wk}','${dk}','${block.id}','${isTemplate}')">+ ejercicio</button>
-  `;
-  div.querySelectorAll('.sport-block-time input').forEach(inp=>inp.addEventListener('change',e=>{if(e.target.dataset.f==='start')block.timeStart=e.target.value;else block.timeEnd=e.target.value;}));
-  container.appendChild(div);
-  renderCheckList(block,wk,dk,isTemplate);
-}
-
-function renderCheckList(block,wk,dk,isTemplate){
-  const cl=document.getElementById(`cl-${wk}-${dk}-${block.id}`);if(!cl)return;cl.innerHTML='';
-  if(!S.weekChecks[wk])S.weekChecks[wk]={};
-  if(!S.weekChecks[wk][dk])S.weekChecks[wk][dk]={};
-  if(!S.weekChecks[wk][dk][block.id])S.weekChecks[wk][dk][block.id]={};
-
-  block.exercises.forEach(ex=>{
-    const done=!!S.weekChecks[wk][dk][block.id][ex.id];
-    const sp=gs(block.sportId);
-    const item=document.createElement('div');item.className='check-item';
-    item.innerHTML=`<div class="check-box${done?' done':''}" style="border-color:${sp?.color||'#888'}" onclick="toggleCheck('${wk}','${dk}','${block.id}','${ex.id}','${isTemplate}')"></div><input class="check-label${done?' done':''}" value="${ex.text}" placeholder="Ejercicio..." style="color:${sp?.color||'inherit'}"><button class="check-item-del" onclick="delCheckItem('${wk}','${dk}','${block.id}','${ex.id}','${isTemplate}')">×</button>`;
-    item.querySelector('.check-label').addEventListener('input',e=>{ex.text=e.target.value;});
-    cl.appendChild(item);
-  });
-}
-
-function toggleCheck(wk,dk,bid,eid,isTemplate){
-  if(!S.weekChecks[wk])S.weekChecks[wk]={};
-  if(!S.weekChecks[wk][dk])S.weekChecks[wk][dk]={};
-  if(!S.weekChecks[wk][dk][bid])S.weekChecks[wk][dk][bid]={};
-  S.weekChecks[wk][dk][bid][eid]=!S.weekChecks[wk][dk][bid][eid];
-  renderWeekView();
-}
-
-function addCheckItem(wk,dk,bid,isTemplate){
-  // find block in routine or extra
-  let block=null;
-  if(isTemplate==='true'||isTemplate===true){
-    S.routines.forEach(r=>{const b=(r.days[dk]||[]).find(b=>b.id===bid);if(b)block=b;});
-  } else {
-    block=(S.weekExtra[wk]?.[dk]||[]).find(b=>b.id===bid);
-  }
-  if(!block)return;
-  block.exercises.push({id:uid(),text:'',done:false});
-  renderWeekView();
-}
-
-function delCheckItem(wk,dk,bid,eid,isTemplate){
-  let block=null;
-  if(isTemplate==='true'||isTemplate===true){
-    S.routines.forEach(r=>{const b=(r.days[dk]||[]).find(b=>b.id===bid);if(b)block=b;});
-  } else {
-    block=(S.weekExtra[wk]?.[dk]||[]).find(b=>b.id===bid);
-  }
-  if(!block)return;
-  block.exercises=block.exercises.filter(e=>e.id!==eid);
-  renderWeekView();
-}
-
-function delWeekBlock(wk,dk,bid,isTemplate){
-  if(isTemplate==='true'||isTemplate===true){
-    S.routines.forEach(r=>{if(r.days[dk])r.days[dk]=r.days[dk].filter(b=>b.id!==bid);});
-  } else {
-    if(S.weekExtra[wk]?.[dk])S.weekExtra[wk][dk]=S.weekExtra[wk][dk].filter(b=>b.id!==bid);
-  }
-  renderWeekView();
-}
-
-function openAddWeekBlock(wk,dk){_modalCtx={mode:'week',wk,wdk:dk};populateSportSel('block-sport-sel');document.getElementById('block-time-start').value='08:00';document.getElementById('block-time-end').value='09:30';document.getElementById('modal-add-block-title').textContent='Agregar bloque a esta semana';openModal('modal-add-block');}
-
-// ═══════════════════════════════════════
-// OBJECTIVES TAB
-// ═══════════════════════════════════════
-function renderMacroGoals(){
-  const list=document.getElementById('macro-goals-list');list.innerHTML='';
-  S.macroGoals.forEach((g,i)=>{
-    const sp=gs(g.sportId);
-    const c=document.createElement('div');c.className='macro-goal-card';
-    c.innerHTML=`<div class="macro-goal-num" style="background:${sp?rgba(sp.color,.12):'#eee'};color:${sp?.color||'#888'}">${i+1}</div><div class="macro-goal-body"><div class="macro-sport-tag" style="color:${sp?.color||'#888'}">${sp?.emoji||''} ${sp?.name||'General'}</div><input class="macro-goal-text" value="${g.text}" placeholder="Objetivo..."><textarea class="macro-goal-desc" placeholder="Descripción...">${g.desc}</textarea><input class="macro-goal-deadline" value="${g.deadline}" placeholder="Fecha límite"></div><button class="macro-goal-del" onclick="delMacroGoal('${g.id}')">×</button>`;
-    c.querySelector('.macro-goal-text').addEventListener('input',e=>g.text=e.target.value);
-    c.querySelector('.macro-goal-desc').addEventListener('input',e=>g.desc=e.target.value);
-    c.querySelector('.macro-goal-deadline').addEventListener('input',e=>g.deadline=e.target.value);
-    list.appendChild(c);
-  });
-}
-function addMacroGoal(){populateSportSel('macro-sp-sel');document.getElementById('macro-text').value='';document.getElementById('macro-desc').value='';document.getElementById('macro-deadline').value='';openModal('modal-macro');}
-function saveMacroGoal(){const sid=document.getElementById('macro-sp-sel').value,t=document.getElementById('macro-text').value.trim(),d=document.getElementById('macro-desc').value,dl=document.getElementById('macro-deadline').value;if(!t)return;S.macroGoals.push({id:uid(),sportId:sid,text:t,desc:d,deadline:dl});closeModal('modal-macro');renderMacroGoals();}
-function delMacroGoal(id){S.macroGoals=S.macroGoals.filter(g=>g.id!==id);renderMacroGoals();}
-
-function renderMonthObjectives(){
-  const[y,m]=moMonth.split('-').map(Number);
-  document.getElementById('mo-month-name').textContent=`${MONTHS[m-1]} ${y}`;
-  if(!S.monthObjectives[moMonth])S.monthObjectives[moMonth]=[];
-  const list=document.getElementById('month-goals-list');list.innerHTML='';
-  S.monthObjectives[moMonth].forEach(g=>{
-    const sp=gs(g.sportId);
-    const r=document.createElement('div');r.className='month-goal-card';
-    r.innerHTML=`<div class="month-goal-dot" style="background:${sp?.color||'#ccc'}"></div><textarea class="month-goal-text" placeholder="Objetivo del mes...">${g.text}</textarea><button class="month-goal-del" onclick="delMonthGoal('${g.id}')">×</button>`;
-    r.querySelector('.month-goal-text').addEventListener('input',e=>g.text=e.target.value);
-    list.appendChild(r);
-  });
-  renderWeekMicros();
-}
-function prevMO(){const[y,m]=moMonth.split('-').map(Number);const d=new Date(y,m-2,1);moMonth=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;renderMonthObjectives();}
-function nextMO(){const[y,m]=moMonth.split('-').map(Number);const d=new Date(y,m,1);moMonth=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;renderMonthObjectives();}
-function addMonthGoal(){S.monthObjectives[moMonth].push({id:uid(),sportId:S.sports[0]?.id||'',text:''});renderMonthObjectives();}
-function delMonthGoal(id){S.monthObjectives[moMonth]=S.monthObjectives[moMonth].filter(g=>g.id!==id);renderMonthObjectives();}
-
-function renderWeekMicros(){
-  const[y,m]=moMonth.split('-').map(Number);
-  const firstDay=new Date(y,m-1,1);const lastDay=new Date(y,m,0);
-  // collect all mondays in month
-  const mondays=[];let d=new Date(firstDay);
-  while(d.getDay()!==1)d.setDate(d.getDate()+1);
-  while(d<=lastDay){mondays.push(new Date(d));d.setDate(d.getDate()+7);}
-  if(!mondays.length){const d2=new Date(firstDay);mondays.push(d2);}
-
-  const container=document.getElementById('week-micro-list');container.innerHTML='';
-  mondays.forEach((mon,i)=>{
-    const wk=weekKey(mon);
-    if(!S.weekMicros[wk])S.weekMicros[wk]=[];
-    const wEnd=addDays(mon,6);
-    const row=document.createElement('div');row.className='week-row';
-    row.innerHTML=`<div class="week-row-hdr" onclick="this.parentElement.classList.toggle('open')"><span class="week-num">Semana ${i+1}</span><span class="week-dates-label">${fmtDate(mon)} – ${fmtDate(wEnd)}</span><span class="week-chevron">▼</span></div><div class="week-body"><div id="wmicros-${wk}"></div><button class="btn-sm" style="width:auto;padding:5px 10px" onclick="addMicro('${wk}')">+ Agregar objetivo</button><br><button class="week-go-btn" onclick="goToWeek('${wk}')">Ver horario de esta semana →</button></div>`;
-    container.appendChild(row);
-    renderMicros(wk);
-  });
-}
-function renderMicros(wk){
-  const c=document.getElementById(`wmicros-${wk}`);if(!c)return;c.innerHTML='';
-  (S.weekMicros[wk]||[]).forEach(mg=>{
-    const sp=gs(mg.sportId);
-    const item=document.createElement('div');item.className='micro-item';
-    item.innerHTML=`<div class="micro-check${mg.done?' done':''}" onclick="toggleMicro('${wk}','${mg.id}')">${mg.done?'✓':''}</div><div style="width:7px;height:7px;border-radius:50%;background:${sp?.color||'#ccc'};flex-shrink:0;margin-top:3px"></div><textarea class="micro-text${mg.done?' done':''}" placeholder="Objetivo...">${mg.text}</textarea><button class="micro-del" onclick="delMicro('${wk}','${mg.id}')">×</button>`;
-    item.querySelector('.micro-text').addEventListener('input',e=>mg.text=e.target.value);
-    c.appendChild(item);
-  });
-}
-function toggleMicro(wk,id){const mg=(S.weekMicros[wk]||[]).find(m=>m.id===id);if(mg){mg.done=!mg.done;renderMicros(wk);}}
-function delMicro(wk,id){if(S.weekMicros[wk])S.weekMicros[wk]=S.weekMicros[wk].filter(m=>m.id!==id);renderMicros(wk);}
-function addMicro(wk){if(!S.weekMicros[wk])S.weekMicros[wk]=[];S.weekMicros[wk].push({id:uid(),text:'',done:false,sportId:S.sports[0]?.id||''});renderMicros(wk);}
-function goToWeek(wk){currentWeekDate=parseDate(wk);switchTab('semana');}
-
-// ═══════════════════════════════════════
-// MODAL UTILS
-// ═══════════════════════════════════════
-function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
-
-// ═══════════════════════════════════════
-// EXPORT
-// ═══════════════════════════════════════
-function exportPNG(){
-  const btn=event.currentTarget;btn.textContent='⏳';btn.disabled=true;
-  const hideQ='.btn-add-block,.btn-export,.sidebar-toggle,.sport-block-del,.check-item-del,.btn-sm,.week-go-btn,.btn-add-check,.btn-add-macro,.tabs,.btn-add-routine';
-  document.querySelectorAll(hideQ).forEach(el=>el.style.visibility='hidden');
-  html2canvas(document.querySelector('.main'),{backgroundColor:'#f7f5f0',scale:2,useCORS:true,logging:false}).then(canvas=>{
-    const a=document.createElement('a');a.download='marsi-planner.png';a.href=canvas.toDataURL('image/png');a.click();
-  }).finally(()=>{document.querySelectorAll(hideQ).forEach(el=>el.style.visibility='');btn.innerHTML='🖼️ PNG';btn.disabled=false;});
-}
-
-// ═══════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════
-renderSports();
-renderWeekView();
-</script>
 </body>
 </html>
